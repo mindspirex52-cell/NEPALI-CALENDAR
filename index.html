@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Nepali Calendar (BS)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background: #ffffff;
+      min-height: 100vh;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    .calendar {
+      max-width: 420px;
+      margin: 30px auto;
+      background: white;
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 15px;
+    }
+
+    .header h4 {
+      font-weight: bold;
+    }
+
+    .btn-nav {
+      border-radius: 50px;
+      padding: 5px 15px;
+    }
+
+    .day {
+      height: 55px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 2px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .day:hover {
+      background: #f1f1f1;
+    }
+
+    .selected {
+      background: #198754 !important;
+      color: white;
+      font-weight: bold;
+    }
+
+    .week-header div {
+      font-size: 13px;
+      color: #555;
+    }
+
+    .selected-date {
+      text-align: center;
+      margin-top: 10px;
+      font-weight: bold;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+
+<div class="calendar">
+  <div class="header">
+    <h4 id="monthYear"></h4>
+    <div class="d-flex justify-content-between mt-2">
+      <button class="btn btn-primary btn-sm btn-nav" onclick="prevMonth()">◀</button>
+      <button class="btn btn-primary btn-sm btn-nav" onclick="nextMonth()">▶</button>
+    </div>
+  </div>
+
+  <div class="row text-center fw-bold week-header">
+    <div class="col">Sun</div>
+    <div class="col">Mon</div>
+    <div class="col">Tue</div>
+    <div class="col">Wed</div>
+    <div class="col">Thu</div>
+    <div class="col">Fri</div>
+    <div class="col">Sat</div>
+  </div>
+
+  <div id="calendarDays" class="row text-center"></div>
+
+  <div class="selected-date" id="selectedDate">Selected: None</div>
+</div>
+
+<script>
+const bsMonths = [
+  "Baisakh","Jestha","Ashadh","Shrawan","Bhadra","Ashwin",
+  "Kartik","Mangsir","Poush","Magh","Falgun","Chaitra"
+];
+
+const monthDays = [31,31,32,31,31,30,30,29,30,29,30,30];
+
+let currentYear = 2080;
+let currentMonth = 0;
+let selectedDay = null;
+
+function renderCalendar() {
+  const daysContainer = document.getElementById("calendarDays");
+  const monthYear = document.getElementById("monthYear");
+
+  daysContainer.innerHTML = "";
+  monthYear.innerText = bsMonths[currentMonth] + " " + currentYear;
+
+  let totalDays = monthDays[currentMonth];
+
+  for (let i = 1; i <= totalDays; i++) {
+    let div = document.createElement("div");
+    div.className = "col day";
+    div.innerText = i;
+
+    if (i === selectedDay) {
+      div.classList.add("selected");
+    }
+
+    div.onclick = function () {
+      selectedDay = i;
+      updateSelectedDate();
+      renderCalendar();
+    };
+
+    daysContainer.appendChild(div);
+  }
+}
+
+function updateSelectedDate() {
+  document.getElementById("selectedDate").innerText =
+    "Selected: " + selectedDay + " " + bsMonths[currentMonth] + " " + currentYear;
+}
+
+function prevMonth() {
+  currentMonth--;
+  if (currentMonth < 0) {
+    currentMonth = 11;
+    currentYear--;
+  }
+  selectedDay = null;
+  renderCalendar();
+}
+
+function nextMonth() {
+  currentMonth++;
+  if (currentMonth > 11) {
+    currentMonth = 0;
+    currentYear++;
+  }
+  selectedDay = null;
+  renderCalendar();
+}
+
+renderCalendar();
+</script>
+
+</body>
+</html>
