@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Countdown Timer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #0a0a1a 0%, #1a0a2e 30%, #0a1628 60%, #0d0d2b 100%);
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Animated background orbs */
+        .orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.4;
+            animation: float 8s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        .orb-1 {
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, #6c5ce7, transparent);
+            top: -100px;
+            left: -100px;
+            animation-delay: 0s;
+        }
+
+        .orb-2 {
+            width: 350px;
+            height: 350px;
+            background: radial-gradient(circle, #00cec9, transparent);
+            bottom: -80px;
+            right: -80px;
+            animation-delay: -3s;
+        }
+
+        .orb-3 {
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, #e17055, transparent);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation-delay: -5s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(30px, -30px) scale(1.05); }
+            50% { transform: translate(-20px, 20px) scale(0.95); }
+            75% { transform: translate(20px, 10px) scale(1.02); }
+        }
+
+        /* Particle grid */
+        .particles {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .particle {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 50%;
+            animation: sparkle 4s ease-in-out infinite;
+        }
+
+        @keyframes sparkle {
+            0%, 100% { opacity: 0.1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(1.5); }
+        }
+
+        .container {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+        }
+
+        .label {
+            font-size: 1.1rem;
+            font-weight: 400;
+            color: rgba(255, 255, 255, 0.5);
+            letter-spacing: 6px;
+            text-transform: uppercase;
+            margin-bottom: 40px;
+        }
+
+        .timer-card {
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 32px;
+            padding: 60px 80px;
+            box-shadow: 
+                0 25px 60px rgba(0, 0, 0, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.06);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .timer-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -50%;
+            width: 200%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(108, 92, 231, 0.5), rgba(0, 206, 201, 0.5), transparent);
+            animation: shimmer 4s linear infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-50%); }
+            100% { transform: translateX(50%); }
+        }
+
+        .digits-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .digit-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .digit-value {
+            font-size: 7rem;
+            font-weight: 800;
+            line-height: 1;
+            background: linear-gradient(180deg, #ffffff 0%, rgba(255, 255, 255, 0.7) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-variant-numeric: tabular-nums;
+            min-width: 180px;
+            text-align: center;
+        }
+
+        .digit-label {
+            font-size: 0.75rem;
+            font-weight: 400;
+            color: rgba(255, 255, 255, 0.35);
+            letter-spacing: 4px;
+            text-transform: uppercase;
+        }
+
+        .separator {
+            font-size: 5rem;
+            font-weight: 300;
+            color: rgba(255, 255, 255, 0.2);
+            padding: 0 4px;
+            animation: blink 1s ease-in-out infinite;
+            margin-bottom: 28px;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.2; }
+        }
+
+        /* Progress ring */
+        .progress-container {
+            margin-top: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+        }
+
+        .progress-bar-bg {
+            width: 300px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #6c5ce7, #00cec9);
+            border-radius: 4px;
+            transition: width 1s linear;
+            box-shadow: 0 0 12px rgba(108, 92, 231, 0.5);
+        }
+
+        .progress-text {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.4);
+            min-width: 45px;
+        }
+
+        /* Controls */
+        .controls {
+            margin-top: 48px;
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 14px 36px;
+            border: none;
+            border-radius: 16px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #6c5ce7, #a855f7);
+            color: white;
+            box-shadow: 0 8px 24px rgba(108, 92, 231, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 32px rgba(108, 92, 231, 0.5);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.06);
+            color: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        /* Finished state */
+        .finished .timer-card {
+            border-color: rgba(108, 92, 231, 0.4);
+            animation: glow-pulse 2s ease-in-out infinite;
+        }
+
+        .finished .digit-value {
+            background: linear-gradient(180deg, #6c5ce7 0%, #00cec9 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+        }
+
+        @keyframes glow-pulse {
+            0%, 100% { box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4), 0 0 40px rgba(108, 92, 231, 0.1); }
+            50% { box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4), 0 0 80px rgba(108, 92, 231, 0.3); }
+        }
+
+        .finished-text {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: white;
+            margin-top: 24px;
+            display: none;
+            letter-spacing: 2px;
+        }
+
+        .finished .finished-text {
+            display: block;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .timer-card { padding: 40px 30px; border-radius: 24px; }
+            .digit-value { font-size: 4rem; min-width: 100px; }
+            .separator { font-size: 3rem; }
+            .progress-bar-bg { width: 200px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+
+    <div class="particles" id="particles"></div>
+
+    <div class="container" id="container">
+        <div class="label">Countdown Timer</div>
+        <div class="timer-card">
+            <div class="digits-container">
+                <div class="digit-group">
+                    <div class="digit-value" id="hours">01</div>
+                    <div class="digit-label">Hours</div>
+                </div>
+                <div class="separator">:</div>
+                <div class="digit-group">
+                    <div class="digit-value" id="minutes">00</div>
+                    <div class="digit-label">Minutes</div>
+                </div>
+                <div class="separator">:</div>
+                <div class="digit-group">
+                    <div class="digit-value" id="seconds">00</div>
+                    <div class="digit-label">Seconds</div>
+                </div>
+            </div>
+
+            <div class="progress-container">
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" id="progressBar" style="width: 0%"></div>
+                </div>
+                <div class="progress-text" id="progressText">0%</div>
+            </div>
+
+            <div class="finished-text" id="finishedText">⏰ Time's Up!</div>
+
+            <div class="controls">
+                <button class="btn btn-primary" id="startPauseBtn" onclick="toggleTimer()">Start</button>
+                <button class="btn btn-secondary" id="resetBtn" onclick="resetTimer()">Reset</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Generate particles
+        const particlesContainer = document.getElementById('particles');
+        for (let i = 0; i < 40; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.top = Math.random() * 100 + '%';
+            particle.style.animationDelay = Math.random() * 4 + 's';
+            particle.style.animationDuration = (3 + Math.random() * 3) + 's';
+            particlesContainer.appendChild(particle);
+        }
+
+        // Timer logic
+        const TOTAL_SECONDS = 3600; // 1 hour
+        let remainingSeconds = TOTAL_SECONDS;
+        let timerInterval = null;
+        let isRunning = false;
+
+        const hoursEl = document.getElementById('hours');
+        const minutesEl = document.getElementById('minutes');
+        const secondsEl = document.getElementById('seconds');
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
+        const startPauseBtn = document.getElementById('startPauseBtn');
+        const container = document.getElementById('container');
+
+        function updateDisplay() {
+            const h = Math.floor(remainingSeconds / 3600);
+            const m = Math.floor((remainingSeconds % 3600) / 60);
+            const s = remainingSeconds % 60;
+
+            hoursEl.textContent = String(h).padStart(2, '0');
+            minutesEl.textContent = String(m).padStart(2, '0');
+            secondsEl.textContent = String(s).padStart(2, '0');
+
+            const elapsed = TOTAL_SECONDS - remainingSeconds;
+            const percent = Math.round((elapsed / TOTAL_SECONDS) * 100);
+            progressBar.style.width = percent + '%';
+            progressText.textContent = percent + '%';
+
+            // Update page title
+            document.title = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')} - Countdown`;
+        }
+
+        function toggleTimer() {
+            if (remainingSeconds <= 0) return;
+
+            if (isRunning) {
+                clearInterval(timerInterval);
+                isRunning = false;
+                startPauseBtn.textContent = 'Resume';
+            } else {
+                timerInterval = setInterval(() => {
+                    remainingSeconds--;
+                    updateDisplay();
+
+                    if (remainingSeconds <= 0) {
+                        clearInterval(timerInterval);
+                        isRunning = false;
+                        container.classList.add('finished');
+                        startPauseBtn.style.display = 'none';
+                        document.title = '⏰ Time\'s Up!';
+                        playAlarm();
+                    }
+                }, 1000);
+                isRunning = true;
+                startPauseBtn.textContent = 'Pause';
+            }
+        }
+
+        function resetTimer() {
+            clearInterval(timerInterval);
+            isRunning = false;
+            remainingSeconds = TOTAL_SECONDS;
+            container.classList.remove('finished');
+            startPauseBtn.style.display = '';
+            startPauseBtn.textContent = 'Start';
+            updateDisplay();
+        }
+
+        function playAlarm() {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const notes = [523.25, 659.25, 783.99, 1046.5];
+                notes.forEach((freq, i) => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.frequency.value = freq;
+                    osc.type = 'sine';
+                    gain.gain.setValueAtTime(0.3, audioCtx.currentTime + i * 0.25);
+                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + i * 0.25 + 0.5);
+                    osc.start(audioCtx.currentTime + i * 0.25);
+                    osc.stop(audioCtx.currentTime + i * 0.25 + 0.5);
+                });
+            } catch(e) {}
+        }
+
+        updateDisplay();
+
+        // Auto-start the countdown
+        window.addEventListener('load', () => {
+            toggleTimer();
+        });
+    </script>
+</body>
+</html>
